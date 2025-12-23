@@ -1,12 +1,12 @@
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:workout_app/Firebase/auth_services.dart';
 
-final loginPasswordVisibilityProvider = StateProvider<bool>((ref) {
-  return false; // Initially password is hidden (showing dots)
+final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
+  return FirebaseAuth.instance;
 });
 
-final registerPasswordVisiblilityProvider = StateProvider<bool>((ref) {
-  return false;
-});
-final registerConfirmPasswordVisiblilityProvider = StateProvider<bool>((ref) {
-  return false;
+final authServicesProvider = Provider<AuthServices>((ref) {
+  final auth = ref.watch(firebaseAuthProvider);
+  return AuthServices(auth);
 });
