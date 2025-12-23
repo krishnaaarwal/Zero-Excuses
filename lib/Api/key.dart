@@ -1,2 +1,0 @@
-const String API_KEY =
-    '714d95b2d30c5b4922cc34a46567d9c028e9e2ddf11e9d375c95366b6fc016c3';
