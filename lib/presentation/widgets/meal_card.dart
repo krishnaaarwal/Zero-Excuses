@@ -1,67 +1,69 @@
+// lib/presentation/widgets/meal_card.dart
 import 'package:flutter/material.dart';
+import 'package:workout_app/models/meal.dart';
 
 class MealCard extends StatelessWidget {
-  final String mealType;
-  final String time;
-  final String items;
-  final int calories;
-  final int protein;
-  final int carbs;
-  final int fats;
+  final Meal? meal;
+  final VoidCallback? onDelete;
+  final VoidCallback? onEdit;
 
-  const MealCard({
+  const MealCard({super.key, required this.meal, this.onDelete, this.onEdit});
+
+  // Legacy constructor for backward compatibility
+  const MealCard.legacy({
     super.key,
-    required this.mealType,
-    required this.time,
-    required this.items,
-    required this.calories,
-    required this.protein,
-    required this.carbs,
-    required this.fats,
-  });
-
-  IconData _getMealIcon() {
-    switch (mealType.toLowerCase()) {
-      case 'breakfast':
-        return Icons.wb_sunny_outlined;
-      case 'lunch':
-        return Icons.wb_twilight_outlined;
-      case 'snacks':
-        return Icons.fastfood_outlined;
-      case 'dinner':
-        return Icons.nightlight_outlined;
-      default:
-        return Icons.restaurant_outlined;
-    }
-  }
+    required String mealType,
+    required String time,
+    required String items,
+    required int calories,
+    required int protein,
+    required int carbs,
+    required int fats,
+  }) : meal = null,
+       onDelete = null,
+       onEdit = null;
 
   @override
   Widget build(BuildContext context) {
+    if (meal == null) {
+      // Legacy fallback — don't crash the app
+      return const SizedBox.shrink();
+    }
+
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final m = meal!;
 
     return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: isDark
+              ? Colors.white.withOpacity(0.1)
+              : Colors.black.withOpacity(0.1),
+        ),
+      ),
       child: InkWell(
-        onTap: () {
-          _showMealDetails(context);
-        },
+        onTap: onEdit,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Header
               Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: colorScheme.primary.withOpacity(0.1),
+                      color: theme.colorScheme.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
-                      _getMealIcon(),
-                      color: colorScheme.primary,
+                      _getMealIcon(m.mealType),
+                      color: theme.colorScheme.primary,
                       size: 20,
                     ),
                   ),
@@ -70,35 +72,99 @@ class MealCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(mealType, style: theme.textTheme.titleMedium),
-                        Text(time, style: theme.textTheme.bodyMedium),
+                        Text(
+                          m.mealType,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          m.time,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurface.withOpacity(0.6),
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                  Text(
-                    '$calories kcal',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: colorScheme.primary,
+                  if (onDelete != null)
+                    IconButton(
+                      icon: Icon(
+                        Icons.delete_outline,
+                        color: theme.colorScheme.error,
+                        size: 20,
+                      ),
+                      onPressed: onDelete,
+                    ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // Items
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withOpacity(0.05)
+                      : Colors.black.withOpacity(0.02),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.restaurant,
+                      size: 16,
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(m.items, style: theme.textTheme.bodyMedium),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Nutrition
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildNutrientChip(
+                      context,
+                      '${m.calories}',
+                      'cal',
+                      theme.colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildNutrientChip(
+                      context,
+                      '${m.protein}g',
+                      'protein',
+                      Colors.blue,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildNutrientChip(
+                      context,
+                      '${m.carbs}g',
+                      'carbs',
+                      Colors.orange,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildNutrientChip(
+                      context,
+                      '${m.fats}g',
+                      'fats',
+                      Colors.purple,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              Text(
-                items,
-                style: theme.textTheme.bodyMedium,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildMacroChip(context, 'P', protein, 'g'),
-                  _buildMacroChip(context, 'C', carbs, 'g'),
-                  _buildMacroChip(context, 'F', fats, 'g'),
-                ],
-              ),
             ],
           ),
         ),
@@ -106,95 +172,55 @@ class MealCard extends StatelessWidget {
     );
   }
 
-  Widget _buildMacroChip(
+  Widget _buildNutrientChip(
     BuildContext context,
+    String value,
     String label,
-    int value,
-    String unit,
+    Color color,
   ) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
+        color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(
-        '$label: $value$unit',
-        style: theme.textTheme.bodyMedium?.copyWith(
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-
-  void _showMealDetails(BuildContext context) {
-    final theme = Theme.of(context);
-
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(mealType, style: theme.textTheme.headlineMedium),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(time, style: theme.textTheme.bodyMedium),
-              const SizedBox(height: 24),
-              Text('Items', style: theme.textTheme.titleMedium),
-              const SizedBox(height: 8),
-              Text(items, style: theme.textTheme.bodyLarge),
-              const SizedBox(height: 24),
-              Text('Macronutrients', style: theme.textTheme.titleMedium),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildMacroDetail(context, 'Calories', '$calories', 'kcal'),
-                  _buildMacroDetail(context, 'Protein', '$protein', 'g'),
-                  _buildMacroDetail(context, 'Carbs', '$carbs', 'g'),
-                  _buildMacroDetail(context, 'Fats', '$fats', 'g'),
-                ],
-              ),
-              const SizedBox(height: 20),
-            ],
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: theme.textTheme.titleSmall?.copyWith(
+              color: isDark ? color.withOpacity(0.9) : color,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        );
-      },
+          Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontSize: 10,
+              color: theme.colorScheme.onSurface.withOpacity(0.6),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildMacroDetail(
-    BuildContext context,
-    String label,
-    String value,
-    String unit,
-  ) {
-    final theme = Theme.of(context);
-
-    return Column(
-      children: [
-        Text(value, style: theme.textTheme.headlineMedium),
-        Text(unit, style: theme.textTheme.bodyMedium),
-        Text(label, style: theme.textTheme.bodyMedium),
-      ],
-    );
+  IconData _getMealIcon(String mealType) {
+    switch (mealType.toLowerCase()) {
+      case 'breakfast':
+        return Icons.breakfast_dining;
+      case 'lunch':
+        return Icons.lunch_dining;
+      case 'dinner':
+        return Icons.dinner_dining;
+      case 'snack':
+      case 'snacks':
+        return Icons.fastfood;
+      default:
+        return Icons.restaurant;
+    }
   }
 }

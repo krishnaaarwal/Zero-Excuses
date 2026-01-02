@@ -1,38 +1,41 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'api_meta.dart';
+part of 'diet_nutrition_goals.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class ApiMetaAdapter extends TypeAdapter<ApiMeta> {
+class DailyNutritionGoalsAdapter extends TypeAdapter<DailyNutritionGoals> {
   @override
-  final typeId = 0;
+  final typeId = 3;
 
   @override
-  ApiMeta read(BinaryReader reader) {
+  DailyNutritionGoals read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return ApiMeta(
-      id: fields[0] as String,
-      code: fields[1] as String,
-      name: fields[2] as String,
+    return DailyNutritionGoals(
+      caloriesTarget: (fields[0] as num).toInt(),
+      proteinTarget: (fields[1] as num).toInt(),
+      carbsTarget: (fields[2] as num).toInt(),
+      fatsTarget: (fields[3] as num).toInt(),
     );
   }
 
   @override
-  void write(BinaryWriter writer, ApiMeta obj) {
+  void write(BinaryWriter writer, DailyNutritionGoals obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
-      ..write(obj.id)
+      ..write(obj.caloriesTarget)
       ..writeByte(1)
-      ..write(obj.code)
+      ..write(obj.proteinTarget)
       ..writeByte(2)
-      ..write(obj.name);
+      ..write(obj.carbsTarget)
+      ..writeByte(3)
+      ..write(obj.fatsTarget);
   }
 
   @override
@@ -41,7 +44,7 @@ class ApiMetaAdapter extends TypeAdapter<ApiMeta> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ApiMetaAdapter &&
+      other is DailyNutritionGoalsAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

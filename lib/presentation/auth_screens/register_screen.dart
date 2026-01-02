@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:workout_app/presentation/auth_screens/login_screen.dart';
-import 'package:workout_app/state_management/providers.dart';
+import 'package:workout_app/providers.dart/providers.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});

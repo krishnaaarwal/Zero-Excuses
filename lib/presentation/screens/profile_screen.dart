@@ -1,16 +1,82 @@
+// lib/presentation/screens/profile_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:workout_app/providers.dart/providers.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
+  Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Logout'),
+        content: const Text('Are you sure you want to logout?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true && context.mounted) {
+      try {
+        final authService = ref.read(authServicesProvider);
+        await authService.signOut();
+        // Navigation handled by AuthenticationWrapper
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to logout: ${e.toString()}'),
+              backgroundColor: Theme.of(context).colorScheme.error,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _handleEditProfile(BuildContext context) async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Edit Profile feature coming soon!'),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final authService = ref.watch(authServicesProvider);
+    final user = authService.currentUser;
+
+    final displayName = user?.displayName ?? 'User';
+    final email = user?.email ?? 'No email';
+    final initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U';
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Profile', style: theme.textTheme.headlineMedium),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -31,7 +97,7 @@ class ProfileScreen extends StatelessWidget {
                     radius: 50,
                     backgroundColor: Colors.white,
                     child: Text(
-                      'K',
+                      initial,
                       style: theme.textTheme.displayMedium?.copyWith(
                         color: colorScheme.primary,
                       ),
@@ -39,12 +105,19 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Krishna',
+                    displayName,
                     style: theme.textTheme.headlineMedium?.copyWith(
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
+                  Text(
+                    email,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: Colors.white70,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -71,7 +144,7 @@ class ProfileScreen extends StatelessWidget {
               _MenuItem(
                 icon: Icons.person_outline,
                 title: 'Edit Profile',
-                onTap: () {},
+                onTap: () => _handleEditProfile(context),
               ),
               _MenuItem(
                 icon: Icons.flag_outlined,
@@ -144,13 +217,23 @@ class ProfileScreen extends StatelessWidget {
 
             // Logout Button
             OutlinedButton.icon(
-              onPressed: () {},
+              onPressed: () => _handleLogout(context, ref),
               icon: const Icon(Icons.logout),
               label: const Text('Logout'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: colorScheme.error,
                 side: BorderSide(color: colorScheme.error),
                 minimumSize: const Size(double.infinity, 56),
+              ),
+            ),
+            const SizedBox(height: 8),
+
+            // App Version
+            Text(
+              'Version 1.0.0',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurface.withOpacity(0.5),
+                fontSize: 12,
               ),
             ),
             const SizedBox(height: 20),

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:workout_app/presentation/auth_screens/forgot_password.dart';
 import 'package:workout_app/presentation/auth_screens/register_screen.dart';
-import 'package:workout_app/state_management/providers.dart';
+import 'package:workout_app/providers.dart/providers.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
